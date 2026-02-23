@@ -1,3 +1,62 @@
-db.js
-manifest.json
-INSTALLATION.md
+# ============================================================
+# .gitignore — Budget Pro
+# Ce fichier dit à Git quels fichiers NE PAS envoyer sur GitHub.
+# ============================================================
+
+# ── Système d'exploitation ───────────────────────────────────
+# Fichiers cachés créés automatiquement par Windows/Mac/Linux
+.DS_Store           # Mac : métadonnées de dossier
+Thumbs.db           # Windows : miniatures d'images
+desktop.ini         # Windows : paramètres de dossier
+*.lnk               # Raccourcis Windows
+
+# ── Éditeurs de code ─────────────────────────────────────────
+# VSCode
+.vscode/
+*.code-workspace
+
+# JetBrains (WebStorm, PhpStorm...)
+.idea/
+*.iml
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ── Logs et fichiers temporaires ─────────────────────────────
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp       # Fichiers de sauvegarde Vim
+
+# ── Node.js (si jamais tu ajoutes des outils de build) ───────
+node_modules/
+npm-debug.log*
+yarn-error.log
+package-lock.json   # Optionnel : à garder si tu utilises npm
+
+# ── Fichiers de config sensibles (IMPORTANT) ─────────────────
+# Si tu réintègres un backend PHP un jour, ne jamais committer :
+api/config.php      # Contient les identifiants MySQL
+.env                # Variables d'environnement
+.env.local
+.env.production
+*.pem               # Certificats SSL
+*.key               # Clés privées
+
+# ── ZIP et archives ───────────────────────────────────────────
+# Ne pas versionner les archives — GitHub sert déjà de sauvegarde
+*.zip
+*.rar
+*.tar.gz
+*.7z
+
+# ── Dossiers de build (si tu ajoutes un bundler plus tard) ───
+dist/
+build/
+out/
+
+# ── Tests et couverture ───────────────────────────────────────
+coverage/
+.nyc_output/
