@@ -1,0 +1,34 @@
+# Système
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+
+# Éditeurs
+.vscode/
+.idea/
+*.code-workspace
+*.sublime-project
+
+# Logs / temp
+*.log
+*.tmp
+*.bak
+*.swp
+
+# Node (si build tools ajoutés plus tard)
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Archives — GitHub sert déjà de sauvegarde
+*.zip
+*.rar
+*.tar.gz
+*.7z
+
+# Variables sensibles
+.env
+.env.*
+*.pem
+*.key

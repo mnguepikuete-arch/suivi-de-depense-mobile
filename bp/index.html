@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2563EB">
+  <meta name="description" content="Budget Pro – Gérez vos dépenses, sans connexion.">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Budget Pro">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <title>Budget Pro</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ÉCRAN AUTHENTIFICATION
+     ─────────────────────────────────────────────────────────
+     Première visite → onglet "Créer un compte" (auto-détecté)
+     Visites suivantes → onglet "Connexion"
+     ═══════════════════════════════════════════════════════════ -->
+<div id="auth-screen" style="display:none">
+
+  <div class="auth-hero">
+    <div class="auth-logo-wrap">💰</div>
+    <div class="auth-app-name">Budget Pro</div>
+    <div class="auth-tagline">Vos dépenses, sous contrôle</div>
+  </div>
+
+  <div class="auth-card">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="login"    onclick="switchTab('login')">Connexion</button>
+      <button class="tab-btn"        data-tab="register" onclick="switchTab('register')">Créer un compte</button>
+    </div>
+
+    <!-- Connexion -->
+    <form id="form-login" class="auth-form active" novalidate>
+      <div>
+        <label class="lbl">Nom d'utilisateur</label>
+        <input class="inp" type="text" name="username" placeholder="Votre nom" autocomplete="username" required>
+      </div>
+      <div>
+        <label class="lbl">Code PIN</label>
+        <div class="pw-field">
+          <input class="inp" type="password" name="pin" placeholder="••••" inputmode="numeric" maxlength="6" autocomplete="current-password" required>
+          <button type="button" class="eye-btn" onclick="togglePw(this)">👁</button>
+        </div>
+      </div>
+      <div id="login-msg" class="msg"></div>
+      <button type="submit" id="btn-login" class="btn btn-primary btn-w mt">
+        <span class="btxt">Se connecter</span>
+        <div class="bspn"><div class="bspn" style="width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite"></div></div>
+      </button>
+    </form>
+
+    <!-- Inscription -->
+    <form id="form-reg" class="auth-form" novalidate>
+      <div>
+        <label class="lbl">Nom d'utilisateur</label>
+        <input class="inp" type="text" name="username" placeholder="Choisissez un nom" autocomplete="username" required>
+      </div>
+      <div>
+        <label class="lbl">Code PIN (4 à 6 chiffres)</label>
+        <div class="pw-field">
+          <input class="inp" type="password" name="pin" placeholder="••••" inputmode="numeric" maxlength="6" autocomplete="new-password" required>
+          <button type="button" class="eye-btn" onclick="togglePw(this)">👁</button>
+        </div>
+      </div>
+      <div>
+        <label class="lbl">Confirmer le PIN</label>
+        <input class="inp" type="password" name="pin2" placeholder="••••" inputmode="numeric" maxlength="6" autocomplete="new-password" required>
+      </div>
+      <div id="reg-msg" class="msg"></div>
+      <div class="msg msg-info show">
+        💡 Vos données restent sur votre appareil. Aucun compte en ligne requis.
+      </div>
+      <button type="submit" id="btn-reg" class="btn btn-primary btn-w mt">
+        <span class="btxt">Créer mon compte</span>
+        <div class="bspn"><div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin:auto"></div></div>
+      </button>
+    </form>
+  </div>
+
+</div><!-- /auth-screen -->
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     APPLICATION PRINCIPALE
+     ═══════════════════════════════════════════════════════════ -->
+<div id="app-screen">
+
+  <!-- ── Barre de navigation ───────────────────────────────── -->
+  <nav class="topbar">
+    <div class="topbar-left">
+      <div class="nav-logo">💰</div>
+      <span class="nav-title">Budget Pro</span>
+    </div>
+    <span class="nav-user" id="nav-user"></span>
+    <button class="theme-pill" onclick="toggleTheme()" id="theme-btn" title="Changer le thème">
+      <span class="icon">🌙</span>
+      <span>Thème</span>
+    </button>
+    <button id="logout-btn" title="Se déconnecter">Quitter</button>
+  </nav>
+
+  <!-- Bannière hors ligne -->
+  <div class="offline-bar">📵 Mode hors ligne — Données locales uniquement</div>
+
+  <div class="main-content">
+
+    <!-- ── 1. Formulaire nouvelle dépense ───────────────────── -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">➕ Nouvelle dépense</span>
+      </div>
+      <div class="card-body">
+        <form id="expense-form" novalidate>
+          <div class="form-grid">
+
+            <div class="f-field col2">
+              <label class="lbl">Désignation *</label>
+              <input id="f-name" class="inp" type="text" name="name" placeholder="Ex : Marché central, Taxi…" required>
+            </div>
+
+            <div class="f-field">
+              <label class="lbl">Montant (FCFA) *</label>
+              <input class="inp" type="number" name="amount" placeholder="2 500" min="1" inputmode="decimal" required>
+            </div>
+
+            <div class="f-field">
+              <label class="lbl">Catégorie</label>
+              <select class="inp" name="category">
+                <option value="Alimentation">🍽 Alimentation</option>
+                <option value="Transport">🚌 Transport</option>
+                <option value="Loisirs">🎉 Loisirs</option>
+                <option value="Santé">💊 Santé</option>
+              </select>
+            </div>
+
+            <div class="f-field">
+              <label class="lbl">Date *</label>
+              <input id="f-date" class="inp" type="date" name="date" required>
+            </div>
+
+            <div class="f-field">
+              <label class="lbl">Heure</label>
+              <select id="f-hour" class="inp" name="hour"><!-- généré par JS --></select>
+            </div>
+
+            <div class="f-field">
+              <label class="lbl">Minute</label>
+              <select class="inp" name="minute">
+                <option value="0">00 min</option>
+                <option value="15">15 min</option>
+                <option value="30">30 min</option>
+                <option value="45">45 min</option>
+              </select>
+            </div>
+
+            <div class="f-field col2">
+              <button type="submit" id="btn-add" class="btn btn-primary btn-w">
+                <span class="btxt">💾 Enregistrer la dépense</span>
+                <div class="bspn"><div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin:auto"></div></div>
+              </button>
+            </div>
+
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── 2. Graphique ──────────────────────────────────────── -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">📊 Graphique</span>
+        <div class="chart-type-btns">
+          <button class="ctype-btn active" data-type="bar_h"     onclick="setChartType('bar_h')">Barres</button>
+          <button class="ctype-btn"        data-type="pie"       onclick="setChartType('pie')">Camembert</button>
+          <button class="ctype-btn"        data-type="doughnut"  onclick="setChartType('doughnut')">Anneau</button>
+          <button class="ctype-btn"        data-type="line"      onclick="setChartType('line')">Courbe</button>
+          <button class="ctype-btn"        data-type="bar_month" onclick="setChartType('bar_month')">Mois</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="chart-area">
+          <canvas id="main-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 3. Filtres + Total ────────────────────────────────── -->
+    <div class="filter-bar">
+
+      <div class="f-group">
+        <label class="lbl">📅 Période</label>
+        <select id="filter-period">
+          <option value="today">Aujourd'hui</option>
+          <option value="3days">3 derniers jours</option>
+          <option value="week">Cette semaine</option>
+          <option value="month" selected>Ce mois</option>
+          <option value="year">Cette année</option>
+          <option value="all">Tout</option>
+        </select>
+      </div>
+
+      <div class="f-group">
+        <label class="lbl">🏷 Catégorie</label>
+        <select id="filter-cat">
+          <option value="Toutes">Toutes</option>
+          <option value="Alimentation">🍽 Alimentation</option>
+          <option value="Transport">🚌 Transport</option>
+          <option value="Loisirs">🎉 Loisirs</option>
+          <option value="Santé">💊 Santé</option>
+        </select>
+      </div>
+
+      <div class="total-box">
+        <span class="tlbl">Total filtré</span>
+        <span id="total-val" class="tval">0</span>
+        <span class="tcur">FCFA</span>
+      </div>
+
+    </div>
+
+    <!-- ── 4. Liste des dépenses ─────────────────────────────── -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">📋 Historique</span>
+        <span id="exp-count" style="font-size:0.78rem;color:var(--text3)"></span>
+      </div>
+      <div class="card-body">
+        <div id="list-loader" class="list-loader hidden">
+          <div class="s"></div>
+          Chargement…
+        </div>
+        <div id="expense-list" class="expense-list"></div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <!-- FAB scroll vers le formulaire -->
+  <button class="fab" title="Nouvelle dépense">＋</button>
+
+</div><!-- /app-screen -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Chart.js (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- DB puis App (ordre important) -->
+<script src="db.js"></script>
+<script src="app.js"></script>
+
+<script>
+function togglePw(btn) {
+  const inp = btn.previousElementSibling;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+</script>
+</body>
+</html>
